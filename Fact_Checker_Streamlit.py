@@ -143,7 +143,7 @@ def compilar_noticias(links, noticias):
       noticias.append({"title": title, "news": gen_response, "source": url})
       #print("   -> OK para '", title, "'")
     except Exception as error:
-      #print("   -> ERRO: NOK para '", title, "'")
+      msg = "   -> ERRO: NOK para '" + title + "'"
   return noticias
 
 # Define string de busca do google search para sites de noticias
