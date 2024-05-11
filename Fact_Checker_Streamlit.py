@@ -281,7 +281,7 @@ if GOOGLE_API_KEY:
                 st.markdown(message["content"])
 
     # React to user input
-    if prompt := st.chat_input(Por favor descrever os fatos ou colar link para notícias):
+    if prompt := st.chat_input("Por favor descrever os fatos ou colar link para notícias."):
         # Display user message in chat message container
         with st.chat_message("User"):
             st.write(prompt)
