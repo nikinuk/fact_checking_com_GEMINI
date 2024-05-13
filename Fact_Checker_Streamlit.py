@@ -71,6 +71,15 @@ def update_assistant(old, new):
     old = old + [ { "role": "assistant", "content": new } ] 
     return old
 
+def display_assistent(chat_response):
+  # Display assistant response in chat message container
+  with st.chat_message("Assistant"):
+    st.markdown(chat_response)
+  # Add assistant response to chat history
+  st.session_state.messages.append({"role": "assistant", "content": chat_response})
+  st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
+   
+
 # Função busca de links relacionados ao critério de busca 'resultados'
 def listar_links(results, dominios=DOMINIOS_DE_BUSCA, n=NUMERO_DE_DOMINIOS):
   """
@@ -113,13 +122,7 @@ def verify_domains_max(result, links):
   else:
     return True
 
-# Usar Gemini para compilar textos
-def compilar_noticias(links, noticias):
-  """
-  Le as notícias usando o Gemini e retorna JSON com titulo, conteudo e fonte
-  """
-  for url in links:
-    #print(":Status: Lendo informação:", url)
+def ler_url(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     texto_da_publicacao = soup.find('div', class_='publicacao-texto')
@@ -127,12 +130,15 @@ def compilar_noticias(links, noticias):
       # Tente executar o comando
       # Nos testes vi que muitos sites não tem título definido desta forma...
       title = soup.title.string
-      #print("   -> Notícia encontrada:", title)
+      msg = ("   -> Notícia encontrada:", title)
     except Exception as error:
       # Se ocorrer um erro, execute a ação alternativa
-      #print(f"  -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'")
+      msg = "  -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'"
       title = "Noticia"
     text_soup = soup.getText()
+    return text_soup, title, msg
+
+def interpretar_noticias(text_soup, title, noticias):
     try:
       gen_response = model.generate_content(
           "Transcrever o artigo principa em meio à sopa de letras e codigos:" + text_soup,
@@ -141,10 +147,10 @@ def compilar_noticias(links, noticias):
             temperature=0) # Temperatura zero pois a rede não deve criar, apenas transcrever
           ).text
       noticias.append({"title": title, "news": gen_response, "source": url})
-      #print("   -> OK para '", title, "'")
+      msg = "   -> OK para '", title, "'"
     except Exception as error:
-      msg = "   -> ERRO: NOK para '" + title + "'"
-  return noticias
+      msg = "   -> ERRO: NOK para '", title, "'"
+    return noticias, msg
 
 # Define string de busca do google search para sites de noticias
 def news(fact):
@@ -213,18 +219,13 @@ def create_query(fact_2_check):
     fact_2_check = noticias[0]['title']
   else:
     query, noticias = fact(fact_2_check)
-  return query, noticias
+  return query, noticias, fact_2_check
 
 def buscar_noticias(query):
   # Busca de noticias
   results = search(query, domains=DOMINIOS_DE_BUSCA, num=250)
   links = listar_links(results)
   return links
-
-def compilar_noticias(links):
-  # ACionamento do GEMINI para ler e compilar as notícias
-  #print("   -> Busca será feita em " + str(len(links)) + " domínios\n")
-  return compilar_noticias(links, noticias)
 
 def avaliar_noticias(noticias):
   # Com todas as notícias compiladas na lista notícias, fazer a comparação final
@@ -256,7 +257,7 @@ with col2:
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
     #Inicialização do modelo
-    client = genai.GenerativeModel('gemini-1.0-pro')
+    model = genai.GenerativeModel('gemini-1.0-pro')
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -266,13 +267,8 @@ if GOOGLE_API_KEY:
         # Iniciar terapia com boas vindas do analista - run GPT
         chat_response = "Por favor descrever os fatos ou colar link para notícias"
 
-        # Display assistant response in chat message container
-        with st.chat_message("Assistant"):
-            st.markdown(chat_response)
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chat_response})
-        st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
-   
+        display_assistent(chat_response)
+        
     # populate chat screen after first iteration
     else:
         # Display chat messages from history on app rerun
@@ -281,46 +277,44 @@ if GOOGLE_API_KEY:
                 st.markdown(message["content"])
 
     # React to user input
-    if prompt := st.chat_input("Por favor descrever os fatos ou colar link para notícias."):
+    if prompt := st.chat_input("Por favor descrever os fatos ou colar link para notícias"):
         # Display user message in chat message container
         with st.chat_message("User"):
             st.write(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
+
         # RUN POHATODA
         # Criar Query
-        query = create_query(prompt)
-        chat_response = "Buca por: " + query
+        query, noticias, fact_2_check = create_query(prompt)
+        chat_response = "   -> Buca por: " + query
         
-        # Display assistant response in chat message container
-        with st.chat_message("Assistant"):
-            st.markdown(chat_response)
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chat_response})
-        st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
+        display_assistent(chat_response)
 
         # buscar noticias
         links = buscar_noticias(query)
-        chat_response = str(len(links)) + " serão verificados"
+        chat_response = "   -> " + str(len(links)) + "notícias serão verificadas"
         
-        # Display assistant response in chat message container
-        with st.chat_message("Assistant"):
-            st.markdown(chat_response)
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chat_response})
-        st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
+        display_assistent(chat_response)
+        
+        for url in links:
+            # buscar noticias
+            chat_response = ":Status: Lendo informação: " + url
+            display_assistent(chat_response)
 
-        # Compilar noticias
-        noticias = compilar_noticias(links)
+            text_soup, title, msg = ler_url(url)
 
-        # Avaliar noticias
+            display_assistent(msg)
+           
+            #interpretar noticias
+            noticias, msg = interpretar_noticias(text_soup, title, noticias) #noticias vazia ou com previa do inicio do main
+            display_assistent(msg)
+        
+        display_assistent('\n:Status: Comparando fatos ...')
+
         chat_response = avaliar_noticias(noticias)
-                # Display assistant response in chat message container
-        with st.chat_message("Assistant"):
-            st.markdown(chat_response)
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chat_response})
-        st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
+
+        display_assistent(chat_response)
 
 # in case API key unavailable
 else:
