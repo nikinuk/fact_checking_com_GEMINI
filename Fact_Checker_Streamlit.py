@@ -247,7 +247,7 @@ if GOOGLE_API_KEY:
     #Inicialização do modelo
     model = genai.GenerativeModel('gemini-1.0-pro')
 
-    fact_2_check = st.text_area("Descreva aqui os fatos a serem verificados ou cole o link da notícia:","")
+    fact_2_check = st.text_input("Descreva aqui os fatos a serem verificados ou cole o link da notícia:","Texto livre ou 'http:...")
 
     # React to user input
     if fact_2_check != "":
