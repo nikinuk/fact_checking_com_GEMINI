@@ -65,21 +65,6 @@ DOMINIOS_DE_BUSCA = [
     "https://www.e-farsas.com/" # Até aqui incluí portais de verifcações de fatos profissionais, para caso a notícia já tenha sido verificada.
 ]
 
-# Atualiza assitente a cada interação
-def update_assistant(old, new):
-    # Adds new "assistent" entries in the chat context, limited by choosen ASSISTENT_MEMORY
-    old = old + [ { "role": "assistant", "content": new } ] 
-    return old
-
-def display_assistent(chat_response):
-  # Display assistant response in chat message container
-  with st.chat_message("Assistant"):
-    st.markdown(chat_response)
-  # Add assistant response to chat history
-  st.session_state.messages.append({"role": "assistant", "content": chat_response})
-  st.session_state.gpt_assistant = update_assistant(st.session_state.gpt_assistant, chat_response)
-   
-
 # Função busca de links relacionados ao critério de busca 'resultados'
 def listar_links(results, dominios=DOMINIOS_DE_BUSCA, n=NUMERO_DE_DOMINIOS):
   """
@@ -262,65 +247,37 @@ if GOOGLE_API_KEY:
     #Inicialização do modelo
     model = genai.GenerativeModel('gemini-1.0-pro')
 
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-        st.session_state.gpt_assistant = []
-
-        # Iniciar terapia com boas vindas do analista - run GPT
-        chat_response = "Por favor descrever os fatos ou colar link para notícias"
-
-        display_assistent(chat_response)
-        
-    # populate chat screen after first iteration
-    else:
-        # Display chat messages from history on app rerun
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    fact_2_check = st.text_area()
 
     # React to user input
-    if prompt := st.chat_input("Por favor descrever os fatos ou colar link para notícias"):
-        # Display user message in chat message container
-        with st.chat_message("User"):
-            st.write(prompt)
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    if fact_2_check != "":
 
         # RUN POHATODA
         # Criar Query
-        query, noticias, fact_2_check = create_query(prompt)
-        chat_response = "   -> Buca por: " + query
+        query, noticias, fact_2_check = create_query(fact_2_check)
+        st.markdown("   -> Buca por: " + query )
         
-        display_assistent(chat_response)
-
         # buscar noticias
         links = buscar_noticias(query)
-        chat_response = "   -> " + str(len(links)) + "notícias serão verificadas"
-        
-        display_assistent(chat_response)
-        
+        st.markdown("   -> " + str(len(links)) + " notícias serão verificadas ...")
+
+        # para cada link encontrado
         for url in links:
             # buscar noticias
-            chat_response = ":Status: Lendo informação: " + url
-            display_assistent(chat_response)
-
+            st.markdown("**:Status:** Lendo informação: " + url)
             text_soup, title, msg = ler_url(url)
-
-            display_assistent(msg)
+            st.markdown(msg)
            
             #interpretar noticias
             noticias, msg = interpretar_noticias(text_soup, title, noticias) #noticias vazia ou com previa do inicio do main
-            display_assistent(msg)
+            st.markdown(msg)
         
-        display_assistent('\n:Status: Comparando fatos ...')
-
+        st.markdown("**:Status:** Comparando fatos ...")
         chat_response = avaliar_noticias(noticias)
 
-        display_assistent(chat_response)
+        st.markdown(chat_response)
 
 # in case API key unavailable
 else:
-    with st.chat_message("Assistant", avatar="🤖"):
-        st.markdown("please provide a valid password or a valid GOOGLE API key to start your therapy - *see sidebar on '>' top left screen*")
+    st.markdown("please provide a valid password or a valid GOOGLE API key to start your therapy - *see sidebar on '>' top left screen*")
 
