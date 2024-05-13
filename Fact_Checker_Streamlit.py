@@ -13,7 +13,7 @@ def to_markdown(text):
   text = text.replace('•', '  *')
   return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 #metatag para autenticação no google
-st.html("<meta name="google-site-verification" content="KwDYU7AdYA9zQvFbaXbsVuzz-ltMqY8okP8isu1sVd0" />")
+st.html('<meta name="google-site-verification" content="KwDYU7AdYA9zQvFbaXbsVuzz-ltMqY8okP8isu1sVd0" />')
 
 autentication_type = st.sidebar.radio(
     "Choose autentication type:",
