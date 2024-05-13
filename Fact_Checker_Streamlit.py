@@ -210,7 +210,7 @@ def create_query(fact_2_check):
 
 def buscar_noticias(query):
   # Busca de noticias
-  results = search(query, num_results=250)
+  results = search(query, num_results=100)
   links = listar_links(results)
   return links
 
