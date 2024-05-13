@@ -225,7 +225,7 @@ def create_query(fact_2_check):
 
 def buscar_noticias(query):
   # Busca de noticias
-  results = search(query, num=250, stop=250)
+  results = search(query, num_results=250)
   links = listar_links(results)
   return links
 
@@ -256,6 +256,7 @@ with col2:
     st.write("Verifiqu fatos narrados ou por links de notícias. O GEMINI fact checker usa a tecnologia de busca e de interpretação de linguagem natural do Google para verificar os fatos contra sites consolidados e verificados, te dando um resumo do que é verificado, do que pode estar errado e te passando os links de referência.")
 
 # IF KEY IS AVAILABLE
+
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
     #Inicialização do modelo
