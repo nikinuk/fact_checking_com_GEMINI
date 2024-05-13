@@ -117,10 +117,10 @@ def ler_url(url):
       # Tente executar o comando
       # Nos testes vi que muitos sites não tem título definido desta forma...
       title = soup.title.string
-      msg = ("   -> Notícia encontrada:", title)
+      msg = (" -> Notícia encontrada:" + title)
     except Exception as error:
       # Se ocorrer um erro, execute a ação alternativa
-      msg = "  -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'"
+      msg = " -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'"
       title = "Noticia"
     text_soup = soup.getText()
     return text_soup, title, msg
@@ -134,9 +134,9 @@ def interpretar_noticias(text_soup, title, noticias):
             temperature=0) # Temperatura zero pois a rede não deve criar, apenas transcrever
           ).text
       noticias.append({"title": title, "news": gen_response, "source": url})
-      msg = "   -> OK para '", title, "'"
+      msg = " -> OK para '" + title + "'"
     except Exception as error:
-      msg = "   -> ERRO: NOK para '", title, "'"
+      msg = " -> ERRO: NOK para '" + title + "'"
     return noticias, msg
 
 # Define string de busca do google search para sites de noticias
@@ -156,14 +156,13 @@ def news(fact):
     # Tente executar o comando
     # Nos testes vi que muitos sites não tem título definido desta forma...
     title = soup.title.string
-    #print("   -> Notícia encontrada:", title)
+    st.markdown(" -> Notícia encontrada:" + title)
   except Exception as error:
     # Se ocorrer um erro, execute a ação alternativa
-    #print(f"  -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'")
+    st.markdown(" -> :ERRO Menor: Noticia sem titulo - deixar titulo como 'noticia'")
     title = "Noticia"
   text_soup = soup.getText()
   # Ler notícia
-  #print(":Status: Lendo a notícia...")
   response = model.generate_content(
       "Transcrever a seguinte sopa de letrinhas no formato do artigo principal contido nela:" + text_soup,
       generation_config=genai.types.GenerationConfig(
@@ -171,16 +170,13 @@ def news(fact):
         temperature=0)
       ).text
   news.append({"title": title, "news": response, "source": fact})
-  #print("   -> OK")
   # Gemini cria query para buscar noticias
-  #print(":Status: Gerando palavras chave para busca...")
   palavras_chave = model.generate_content(
       "Criar um query com palavras-chave para buscar no google search mais notícias relacionadas a este mesmo assunto. Retorne apenas um query, sem nenhum comentário ou explicação. NOTÍCIA:" + response,
       generation_config=genai.types.GenerationConfig(
         candidate_count=1,
         temperature=0.3)
       ).text
-  #print("   -> Palavras-chave:", palavras_chave)
   return palavras_chave, news
 
 #Define string de busca para fatos relatados
@@ -188,14 +184,12 @@ def fact(fact):
   """
   Cria um query com base na descrição do fato
   """
-  #print("\n:Status: Criando query para '" + fact +"' ...")
   palavras_chave = model.generate_content(
       "Criar um query com palavras-chave para buscar no google search notícias relacionadas a este assunto. Retorne apenas um query, sem nenhum comentário ou explicação. ASSUNTO:" + fact,
       generation_config=genai.types.GenerationConfig(
         candidate_count=1,
         temperature=0.3)
       ).text
-  #print("   -> Palavras-chave:", palavras_chave)
   return palavras_chave, []
 
 
@@ -220,7 +214,6 @@ def buscar_noticias(query):
 
 def avaliar_noticias(noticias):
   # Com todas as notícias compiladas na lista notícias, fazer a comparação final
-  #print("\n:Status: Comparando fatos")
   prompt = "Baseado nos diferentes textos do campo 'news' e 'title' dos artigos da lista a seguir, você pode opinar sobre se fatos '" + fact_2_check + "' são ou não verdadeiros? Verifique se há consistência entre estes fatos e os damais textos 'news' fornecidos para formar sua opinião. Por favor justificar sua resposta e citar as fontes sempre que possível. Lista: " + str(noticias)
   gen_response = model.generate_content(
         prompt,
@@ -258,11 +251,11 @@ if GOOGLE_API_KEY:
         # RUN POHATODA
         # Criar Query
         query, noticias, fact_2_check = create_query(fact_2_check)
-        st.markdown("   -> Buca por: " + query )
+        st.markdown(" -> Buca por: " + query )
         
         # buscar noticias
         links = buscar_noticias(query)
-        st.markdown("   -> " + str(len(links)) + " notícias serão verificadas ...")
+        st.markdown(" -> " + str(len(links)) + " notícias serão verificadas ...")
 
         # para cada link encontrado
         for url in links:
@@ -276,6 +269,7 @@ if GOOGLE_API_KEY:
             st.markdown(msg)
         
         st.markdown("**:Status:** Comparando fatos ...")
+        st.markdown("##Conclusão")
         chat_response = avaliar_noticias(noticias)
 
         st.markdown(chat_response)
