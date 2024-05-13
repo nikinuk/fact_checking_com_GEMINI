@@ -279,5 +279,5 @@ if GOOGLE_API_KEY:
 
 # in case API key unavailable
 else:
-    st.markdown("please provide a valid password or a valid GOOGLE API key to start your therapy - *see sidebar on '>' top left screen*")
+    st.markdown("\nFavor entrar com a senha ou com uma chave GOOGLE válida para começar a verificação - **veja barra lateral '>' no alto a esquerda**")
 
