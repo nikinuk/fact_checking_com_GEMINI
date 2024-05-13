@@ -27,6 +27,9 @@ if st.session_state.autentication == "password":
 else:
     GOOGLE_API_KEY = pwd
 
+GOOGLE_CLOUD_KEY = st.secrets["GOOGLE_CLOUD_KEY"]
+CX = st.secrets["CX"]
+
 # CONFIGURAÇÂO PARA BUSCA NA INTENET
 
 from googlesearch import search # Biblioteca não oficial para dusca no Google: https://pypi.org/project/googlesearch-python/
@@ -204,12 +207,26 @@ def create_query(fact_2_check):
 
 def buscar_noticias(query):
   # Busca de noticias
-  results = search(query, num_results=20)
+  #results = search(query, num_results=20)
+  #links = []
+  #for link in results:
+  #  links.append(link)
+  #results.close()
+  #links = listar_links(links)
+  url = "https://www.googleapis.com/customsearch/v1"
+  PARAMETERS = [
+      {"start": 1, 'q': query, 'key': GOOGLE_CLOUD_KEY, 'cx': CX, 'num': 10, 'dateRestrict': "m3", 'filter': 1, 'gl': "br", 'safe': "active"},
+      {"start": 11, 'q': query, 'key': GOOGLE_CLOUD_KEY, 'cx': CX, 'num': 10, 'dateRestrict': "m3", 'filter': 1, 'gl': "br", 'safe': "active"}
+      ]
   links = []
-  for link in results:
-    links.append(link)
-  results.close()
-  links = listar_links(links)
+  for p in PARAMETERS:
+      response = requests.get(url, params=p)
+      if response.status_code == 200:
+          data = response.json()
+          for item in data['items']:
+              links.append(item['link'])
+      else:
+          st.text(f"Error: {response.status_code}")
   return links
 
 def avaliar_noticias(noticias):
