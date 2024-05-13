@@ -223,6 +223,7 @@ def buscar_noticias(query):
       response = requests.get(url, params=p)
       if response.status_code == 200:
           data = response.json()
+          st.text(data.keys())
           for item in data['items']:
               links.append(item['link'])
       else:
