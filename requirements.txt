@@ -1,2 +1,5 @@
 google-generativeai
+googlesearch
+requests
+bs4
 IPython
