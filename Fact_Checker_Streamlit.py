@@ -119,6 +119,8 @@ def verify_domains_max(result, links):
   # Verifica ontagem
   if c >= MAX_REPETICAO:
     return False
+  elif the_domain == "new_domain":
+    return False
   else:
     return True
 
@@ -223,7 +225,7 @@ def create_query(fact_2_check):
 
 def buscar_noticias(query):
   # Busca de noticias
-  results = search(query, domains=DOMINIOS_DE_BUSCA, num=250)
+  results = search(query, num=250, stop=250)
   links = listar_links(results)
   return links
 
