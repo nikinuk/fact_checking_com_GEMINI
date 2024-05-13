@@ -21,7 +21,7 @@ if "autentication" not in st.session_state:
     st.session_state.autentication = autentication_type
 st.session_state.autentication = autentication_type
 pwd = st.sidebar.text_input("type your password or APY key", type="password")
-if st.session_state.autentication == "Inspiria":
+if st.session_state.autentication == "password":
     if pwd == st.secrets["PASSWORD"]:
         GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 else:
