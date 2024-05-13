@@ -238,7 +238,7 @@ with col1:
    st.image(image)
 with col2:
     st.title("GEMINI-powered Fact Checker")
-    st.write("Verifiqu fatos narrados ou por links de notícias. O GEMINI fact checker usa a tecnologia de busca e de interpretação de linguagem natural do Google para verificar os fatos contra sites consolidados e verificados, te dando um resumo do que é verificado, do que pode estar errado e te passando os links de referência.")
+    st.write("Verifique fatos narrados ou por links de notícias. O GEMINI fact checker usa a tecnologia de busca e de interpretação de linguagem natural do Google para verificar os fatos contra sites consolidados e verificados, te dando um resumo do que é verificado, do que pode estar errado e te passando os links de referência.")
 
 # IF KEY IS AVAILABLE
 
@@ -247,7 +247,7 @@ if GOOGLE_API_KEY:
     #Inicialização do modelo
     model = genai.GenerativeModel('gemini-1.0-pro')
 
-    fact_2_check = st.text_area()
+    fact_2_check = st.text_area("Descreva aqui os fatos a serem verificados ou cole o link da notícia:","")
 
     # React to user input
     if fact_2_check != "":
