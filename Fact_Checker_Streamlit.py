@@ -251,7 +251,6 @@ if GOOGLE_API_KEY:
 
     # React to user input
     if fact_2_check != "":
-        st.text(fact_2_check)
         # RUN POHATODA
         # Criar Query
         query, noticias, fact_2_check = create_query(fact_2_check)
