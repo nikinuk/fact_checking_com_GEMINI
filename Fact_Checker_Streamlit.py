@@ -214,6 +214,7 @@ def buscar_noticias(query):
   links = []
   for link in results:
     links.append(link)
+  results.close()
   links = listar_links(links)
   return links
 
